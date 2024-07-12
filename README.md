@@ -31,7 +31,8 @@ Twitterbot is designed to run permanently and therefore you should run it on a s
     ```
 ## Usage
 
-1. Write your quotes in a new file named `rawdata.txt`, one per line. Ensure they do not exceed 280 characters for Twitter. Copy this file to your server using, for example, ssh:
+1. Write your quotes in a new file named `rawdata.txt`, one per line. Ensure they do not exceed the allowd Tweet length. Copy this file to your server using, for example, ssh:
+
     ```
     scp [-i ssh_private_key] /path/on/your/computer/rawdata.txt username@SERVER_IP:/path/to/directory/of/twitterbot
     ```
@@ -48,11 +49,12 @@ Twitterbot is designed to run permanently and therefore you should run it on a s
     access_token_secret:XXXXXXX
     ```
     Copy the credentials file to your server, too.
-5. Adjust the posting hours in the `posting_hours.conf` file if desired. You can manipulate the file on the ssh terminal with: 
+5. Open the `config.py` and set the parameters. You can manipulate the file on the ssh terminal with: 
     ```
-    vim posting_hours.conf
+    vim config.py
     ```
-    Press `i` to manipulate the file, then `Esc` if finished and `:wq` to save and close.
+    Press `i` to manipulate the file, `Esc` when finished and `:wq` to save and close.
+    The most important parameters are those for the schedule. Choose a `SCHEDULE_MODE` and adjust their corresponding parameters. Change the allowed Tweet length if you have Twitter blue.
 6. Start the bot with 
     ```
     nohup python3 twitterbot.py &
@@ -69,8 +71,8 @@ Twitterbot is designed to run permanently and therefore you should run it on a s
 
 ## Notes
 1. The script `database.py` also provides some other useful database related functions.
-2. Ensure the hours in `posting_hours.conf` are 2 hours apart from each so the random computed posting times do not overlap. Based on those hours, the posting times are computed within the range of one hour before and one hour after.
-3. The computed posting times will be logged daily in a `posting_schedule.log` file where you can check them at any time. Other logs will be written in a `twitterbot.log` file.
+2. The computed posting times and all the other logs will be written in a `twitterbot.log` file.
+3. Ensure the given posting hours in `config.py` are 2 hours apart from each so the random computed posting times do not overlap. Based on those hours, the posting times are computed within the range of one hour before and one hour after.
 
 ## Support
 

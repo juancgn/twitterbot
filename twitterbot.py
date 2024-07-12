@@ -6,19 +6,7 @@ from datetime import datetime, time, date, timedelta
 import requests
 import time as ti
 import os
-
-# configs
-DATABASE = "data.db"
-LOGFILE = "twitterbot.log"
-CREDENTIALS_FILE = "cred.env"
-
-DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S %Z%z"
-SCHEDULE_LOG_DATETIME_FORMAT = "[%Y-%m-%d] %H:%M"
-DATE_FORMAT = "%Y-%m-%d"
-
-POSTING_HOURS_CONF_FILE = "posting_hours.conf"
-POSTING_SCHEDULE_LOG = "posting_schedule.log"
-
+import config
 
 def check_database_connection():
      """
@@ -26,7 +14,7 @@ def check_database_connection():
      """
      try:
           # request data and try to unpack
-          with sqlite3.connect(DATABASE) as conn:
+          with sqlite3.connect(config.DATABASE) as conn:
                c = conn.cursor()
                _, _ = c.execute("SELECT quoteID, quote FROM quotes").fetchone()
                _, _ = c.execute("SELECT ordering, quoteID FROM queue").fetchone()
@@ -41,23 +29,23 @@ def prepare_logger():
      Initializes the loggers for tweepy and app.
      """
      # delete old logfile if exists
-     if os.path.exists(LOGFILE):
-        os.remove(LOGFILE)
+     if os.path.exists(config.LOGFILE):
+        os.remove(config.LOGFILE)
 
      # define formatter for both loggers
-     formatter = logging.Formatter('[%(asctime)s] [%(name)s] %(levelname)s: %(message)s', datefmt=DATETIME_FORMAT)
+     formatter = logging.Formatter(config.LOGGER_FORMAT, datefmt=config.DATETIME_FORMAT)
 
      # tweepy logger
      twpy_logger = logging.getLogger("tweepy")
      twpy_logger.setLevel(logging.DEBUG)
-     twpy_filehandler = logging.FileHandler(filename=LOGFILE)
+     twpy_filehandler = logging.FileHandler(filename=config.LOGFILE)
      twpy_filehandler.setFormatter(formatter)
      twpy_logger.addHandler(twpy_filehandler)
 
      # own logger
      my_logger = logging.getLogger("twitterbot")
      my_logger.setLevel(logging.DEBUG)
-     my_logger_filehandler = logging.FileHandler(filename=LOGFILE)
+     my_logger_filehandler = logging.FileHandler(filename=config.LOGFILE)
      my_logger_filehandler.setFormatter(formatter)
      my_logger.addHandler(my_logger_filehandler)
 
@@ -69,7 +57,7 @@ def update_queue():
      Puts the first quote in the queue at a random position in the second half.
      """
      # insert randomly in the second half
-     with sqlite3.connect(DATABASE) as conn:
+     with sqlite3.connect(config.DATABASE) as conn:
           c = conn.cursor()
 
           # compute new position
@@ -91,8 +79,8 @@ def log_post(response, quoteID):
      Logs the post into the database using the information provided by the response.
      """
      identifier = response.json()['data']['id']
-     timestamp = datetime.now().astimezone().strftime(DATETIME_FORMAT)
-     with sqlite3.connect(DATABASE) as conn:
+     timestamp = datetime.now().astimezone().strftime(config.DATETIME_FORMAT)
+     with sqlite3.connect(config.DATABASE) as conn:
           c = conn.cursor()
           c.execute("""INSERT INTO posts (identifier, timestamp, quoteID, response_headers) VALUES (?, ?, ?, ?)""",
                     (identifier, timestamp, quoteID, str(response.headers)))
@@ -104,7 +92,7 @@ def get_new_quote():
      """
      Retrieves the first quote from the queue.
      """
-     with sqlite3.connect(DATABASE) as conn:
+     with sqlite3.connect(config.DATABASE) as conn:
           c = conn.cursor()
 
           # get newest quote
@@ -121,7 +109,7 @@ def send_tweet(quote):
      Sends the tweet via tweepy.
      """
      # get credentials
-     with open(CREDENTIALS_FILE, "r") as f:
+     with open(config.CREDENTIALS_FILE, "r") as f:
           consumer_key, consumer_secret, access_token, access_token_secret = [line.split(':')[-1] for line in f.read().split()]
 
      client = tweepy.Client(
@@ -146,9 +134,8 @@ def generate_new_posting_times():
      """
      now = datetime.now().astimezone()
 
-     # get posting hours config
-     with open(POSTING_HOURS_CONF_FILE, 'r') as f:
-          posting_hours = [int(h) for h in f.readline().strip().split(" ")]
+     # get posting hours
+     posting_hours = config.POSTING_HOURS.copy()
 
      # check if there are remaining posting hours for today
      start_posting_today = (now.hour+1 < posting_hours[-1])
@@ -172,13 +159,13 @@ def generate_new_posting_times():
           posting_times = [posting_times[i] for i in range(len(posting_times)) if posting_hours[i]>now.hour+1]
      
      # log times
-     with open(POSTING_SCHEDULE_LOG, 'w') as f:
-          f.write( f"Computed on [{now.strftime(DATETIME_FORMAT)}]\n"
-               + "\n".join( t.strftime(SCHEDULE_LOG_DATETIME_FORMAT) for t in posting_times )
+     with open(config.POSTING_SCHEDULE_LOG, 'w') as f:
+          f.write( f"Computed on [{now.strftime(config.DATETIME_FORMAT)}]\n"
+               + "\n".join( t.strftime(config.SCHEDULE_LOG_DATETIME_FORMAT) for t in posting_times )
                + "\n"
           )
 
-     my_logger.debug(f"Computed posting hours for [{posting_times[0].strftime(DATE_FORMAT)}].")
+     my_logger.debug(f"Computed posting hours for [{posting_times[0].strftime(config.DATE_FORMAT)}].")
      return posting_times
 
 def sleep_until(clocktime):
@@ -190,7 +177,7 @@ def sleep_until(clocktime):
      seconds_until_posting = (clocktime - now).total_seconds()
 
      # sleep
-     my_logger.debug(f"Sleep until [{clocktime.strftime(DATETIME_FORMAT)}]")
+     my_logger.debug(f"Sleep until [{clocktime.strftime(config.DATETIME_FORMAT)}]")
      ti.sleep(seconds_until_posting)
 
 if __name__=="__main__":

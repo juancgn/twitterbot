@@ -1,16 +1,12 @@
 import sqlite3
 import random
-
-RAWDATA_FILE = "rawdata.txt"
-DATABASE = "data.db"
-TWEET_MAX_LENGTH = 280
-
+import config
 
 def create_new_database():
     """
     Creates and saves the database named `DATABASE` with sqlite3.
     """
-    with sqlite3.connect(DATABASE) as conn:
+    with sqlite3.connect(config.DATABASE) as conn:
         c = conn.cursor()
         c.execute("""
             CREATE TABLE IF NOT EXISTS quotes (
@@ -45,7 +41,7 @@ def insert_quote(quote:str):
     """
     Inserts quote to quotes table and queues it in queue.
     """
-    with sqlite3.connect(DATABASE) as conn:
+    with sqlite3.connect(config.DATABASE) as conn:
         c = conn.cursor()
 
         # create new quote
@@ -65,13 +61,13 @@ def fill_database():
     Fills the database with the quotes in `RAWDATA_FILE`.
     """
     # load quotes and shuffle randomly
-    with open(RAWDATA_FILE, "r") as f:
+    with open(config.RAWDATA_FILE, "r") as f:
         quotes = f.read().split("\n")
     random.shuffle(quotes)
 
     # fill database
     for quote in quotes:
-        if len(quote) <= TWEET_MAX_LENGTH:
+        if len(quote) <= config.TWEET_MAX_LENGTH:
             insert_quote(quote)
         else:
             print(f"Warning: Can't add this quote to the database, it's too long for Twitter: {quote}")
@@ -82,7 +78,7 @@ def quotes_list():
     """
     Returns a list of the quotes in the database sorted by their position in the queue.
     """
-    with sqlite3.connect(DATABASE) as conn:
+    with sqlite3.connect(config.DATABASE) as conn:
         c = conn.cursor()
         # get quotes as a list sorted by ordering in queue
         quotes_list = [
@@ -96,10 +92,10 @@ def shuffle_raw_list():
     """
     Shuffles the positions of the quotes in the raw data file before it can be used for the database.
     """
-    with open(RAWDATA_FILE, "r") as f:
+    with open(config.RAWDATA_FILE, "r") as f:
         quotes = [q.replace("\n", "") for q in f.readlines()]
     random.shuffle(quotes)
-    with open(RAWDATA_FILE, "w") as f:
+    with open(config.RAWDATA_FILE, "w") as f:
         f.writelines("\n".join(quotes))
 
     print("Shuffled raw list randomly.")
