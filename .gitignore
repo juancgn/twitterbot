@@ -1,7 +1,7 @@
 *
 !twitterbot.py
 !database.py
-!posting_hours.conf
+!config.py
 !.gitignore
 !requirements.txt
 !README.md
