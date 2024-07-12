@@ -12,11 +12,10 @@ TWEET_MAX_LENGTH = 280
 DATABASE = "data.db"
 LOGFILE = "twitterbot.log"
 CREDENTIALS_FILE = "cred.env"
-POSTING_SCHEDULE_LOG = "posting_schedule.log"
 RAWDATA_FILE = "rawdata.txt"
 
 # formats
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S %Z%z"
-SCHEDULE_LOG_DATETIME_FORMAT = "[%Y-%m-%d] %H:%M"
+TIME_FORMAT = "%H:%M"
 DATE_FORMAT = "%Y-%m-%d"
 LOGGER_FORMAT = '[%(asctime)s] [%(name)s] %(levelname)s: %(message)s'

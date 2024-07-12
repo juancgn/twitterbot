@@ -6,6 +6,7 @@ from datetime import datetime, time, date, timedelta
 import requests
 import time as ti
 import os
+from scheduler import Scheduler
 import config
 
 def check_database_connection():
@@ -127,73 +128,21 @@ def send_tweet(quote):
      
      return response
 
-def generate_new_posting_times():
-     """
-     Generates new posting times in the area of the hours and logs them in the corresponding log file.
-     The clocktimes are generate randomly inside a two-hour space centered by the provided hours.
-     """
-     now = datetime.now().astimezone()
-
-     # get posting hours
-     posting_hours = config.POSTING_HOURS.copy()
-
-     # check if there are remaining posting hours for today
-     start_posting_today = (now.hour+1 < posting_hours[-1])
-     
-     # determine whether to start posting today or tomorrow
-     posting_date = now.date()
-     if not start_posting_today:
-          posting_date += timedelta(days=1)
-
-     # create posting_times
-     posting_times = [ 
-               datetime.combine(
-                         date = posting_date, 
-                         time = time(hour=h-randint(0,1), minute=randint(0, 59))
-                    ).astimezone()
-                    for h in posting_hours 
-          ]
-
-     # only use those posting_times for today whose posting_hours is at least 2 hrs is in the future
-     if start_posting_today:
-          posting_times = [posting_times[i] for i in range(len(posting_times)) if posting_hours[i]>now.hour+1]
-     
-     # log times
-     with open(config.POSTING_SCHEDULE_LOG, 'w') as f:
-          f.write( f"Computed on [{now.strftime(config.DATETIME_FORMAT)}]\n"
-               + "\n".join( t.strftime(config.SCHEDULE_LOG_DATETIME_FORMAT) for t in posting_times )
-               + "\n"
-          )
-
-     my_logger.debug(f"Computed posting hours for [{posting_times[0].strftime(config.DATE_FORMAT)}].")
-     return posting_times
-
-def sleep_until(clocktime):
-     """
-     Pauses the app until the provided time is reached.
-     """
-     # compute sleeping time
-     now = datetime.now().astimezone()
-     seconds_until_posting = (clocktime - now).total_seconds()
-
-     # sleep
-     my_logger.debug(f"Sleep until [{clocktime.strftime(config.DATETIME_FORMAT)}]")
-     ti.sleep(seconds_until_posting)
-
 if __name__=="__main__":
      my_logger = prepare_logger()
      check_database_connection()
+
+     scheduler = Scheduler()
 
      # main loop
      while True: # every day
           
           # compute new posting times
-          posting_times = generate_new_posting_times()
+          scheduler.generate()
 
-          while len(posting_times)>0:
+          while not scheduler.is_empty():
                # get next posting time and sleep until then
-               next_posting_time = posting_times.pop(0)
-               sleep_until(next_posting_time)
+               scheduler.sleep()
                
                # get newest quote in the queue
                quote, quoteID = get_new_quote()
