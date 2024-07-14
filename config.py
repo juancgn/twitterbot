@@ -5,8 +5,23 @@ Set a schedule mode and their parameters as desired.
 """
 
 # app
-POSTING_HOURS = [9, 12, 15, 18, 21]
 TWEET_MAX_LENGTH = 280
+
+# scheduler
+"""
+Available modes for generating the posting times are:
+    `fix`:          Fix posting times every day. May vary (daily) up to 59 mins, if ´random_variance` is nonzero.
+    `uniform`:      Evenly distributed within the time window every day anew. One posting per minute is maximum.
+"""
+SCHEDULE_MODE = 'uniform'
+FIX_MODE = {
+        'posting_times' : ['00:04', '00:25', '05:29', '08:01', '10:40', '13:22', '16:00', '18:39', '21:20', '23:11'],
+        'random_variance' : 30
+}
+UNIFORM_MODE = {
+        'postings' : 10,
+        'time_window' : ['07:00', '23:00']
+}
 
 # paths
 DATABASE = "data.db"
