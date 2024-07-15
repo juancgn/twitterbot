@@ -8,7 +8,7 @@ Twitterbot is designed to run permanently and therefore you should run it on a s
 
 - **Database Connection:** The bot establishes a connection to a local SQLite database that manages quotes, queueing, and post logging.
 - **Tweet Posting:** Quotes are posted as tweets using the Twitter API with Tweepy.
-- **Scheduling:** Posting times are randomly generated within a configurable time range.
+- **Scheduling:** Multiple schedule options are provided which take care of the posting timing
 - **Logging:** Events and errors are logged to assist with performance monitoring and troubleshooting.
 - **Queueing:** Used quotes will be queued randomly in the second half of the queue, so the quote selection is random enough but a quote is definitely not posted again too soon.
 
@@ -72,7 +72,7 @@ Twitterbot is designed to run permanently and therefore you should run it on a s
 ## Notes
 1. The script `database.py` also provides some other useful database related functions.
 2. The computed posting times and all the other logs will be written in a `twitterbot.log` file.
-3. Ensure the given posting hours in `config.py` are 2 hours apart from each so the random computed posting times do not overlap. Based on those hours, the posting times are computed within the range of one hour before and one hour after.
+3. Since I am German, the time data are in a 24hr format. If you use the AM/PM format, you should change the format variables in the `config.py` file to output (and read) the correct format. You can use `'%I:%M %p'` as time format. However, the code should work for you as well, since the `datetime` modul handles this internally.
 
 ## Support
 
