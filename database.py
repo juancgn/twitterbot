@@ -54,8 +54,6 @@ def insert_quote(quote:str):
         
         conn.commit()
     
-    print(f"Inserted quote: {quote}")
-
 def fill_database():
     """
     Fills the database with the quotes in `RAWDATA_FILE`.
@@ -63,7 +61,6 @@ def fill_database():
     # load quotes and shuffle randomly
     with open(config.RAWDATA_FILE, "r") as f:
         quotes = f.read().split("\n")
-    random.shuffle(quotes)
 
     # fill database
     for quote in quotes:
