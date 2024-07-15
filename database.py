@@ -4,7 +4,7 @@ import config
 
 def create_new_database():
     """
-    Creates and saves the database named `DATABASE` with sqlite3.
+    Creates and saves the database with sqlite3.
     """
     with sqlite3.connect(config.DATABASE) as conn:
         c = conn.cursor()
@@ -39,7 +39,7 @@ def create_new_database():
 
 def insert_quote(quote:str):
     """
-    Inserts quote to quotes table and queues it in queue.
+    Inserts `quote` to the quotes table and queues it in the `queue` table.
     """
     with sqlite3.connect(config.DATABASE) as conn:
         c = conn.cursor()
@@ -56,9 +56,9 @@ def insert_quote(quote:str):
     
 def fill_database():
     """
-    Fills the database with the quotes in `RAWDATA_FILE`.
+    Fills the database with the quotes from the rawdata file.
     """
-    # load quotes and shuffle randomly
+    # load quotes
     with open(config.RAWDATA_FILE, "r") as f:
         quotes = f.read().split("\n")
 
@@ -77,12 +77,13 @@ def quotes_list():
     """
     with sqlite3.connect(config.DATABASE) as conn:
         c = conn.cursor()
-        # get quotes as a list sorted by ordering in queue
+        # get quotes as a list sorted by the ordering in the queue
         quotes_list = [
-            quote for (quote,) in c.execute("""SELECT quotes.quote FROM quotes JOIN queue 
-                                            ON quotes.quoteID = queue.quoteID ORDER BY ordering""").fetchall()
+                quote for (quote,) in c.execute("""SELECT quotes.quote FROM quotes JOIN queue 
+                                                ON quotes.quoteID = queue.quoteID ORDER BY ordering""").fetchall()
             ]
         conn.commit()
+
     return quotes_list
 
 def shuffle_raw_list():
@@ -98,19 +99,19 @@ def shuffle_raw_list():
     print("Shuffled raw list randomly.")
 
 if __name__=="__main__":
-    # create new sqlite3 database with the necessary tables
+    # create new sqlite3 database and the tables
     create_new_database()
 
-    # fill the database with the quotes in `RAWDATA_FILE`
+    # fill the database with the quotes in the rawdata file
     fill_database()
     
-    # insert a single quote manually 
+    # insert a single quote by hand 
     #insert_quote("TEST")
 
     # get ordered quotes list from database
     #my_quotes = quotes_list()
 
-    # shuffle the raw list randomly
+    # shuffle the rawdata file randomly
     #shuffle_raw_list()
     
 

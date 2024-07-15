@@ -23,6 +23,7 @@ def check_database_connection():
      except Exception as e:
           my_logger.fatal(f"Database check failed. Terminate. Message: {str(e)}")
           exit()
+
      my_logger.debug("Database connection established.")
      
 def prepare_logger():
@@ -33,7 +34,6 @@ def prepare_logger():
      if os.path.exists(config.LOGFILE):
         os.remove(config.LOGFILE)
 
-     # define formatter for both loggers
      formatter = logging.Formatter(config.LOGGER_FORMAT, datefmt=config.DATETIME_FORMAT)
 
      # tweepy logger
@@ -43,7 +43,7 @@ def prepare_logger():
      twpy_filehandler.setFormatter(formatter)
      twpy_logger.addHandler(twpy_filehandler)
 
-     # own logger
+     # app logger
      my_logger = logging.getLogger("twitterbot")
      my_logger.setLevel(logging.DEBUG)
      my_logger_filehandler = logging.FileHandler(filename=config.LOGFILE)
@@ -51,13 +51,13 @@ def prepare_logger():
      my_logger.addHandler(my_logger_filehandler)
 
      my_logger.debug("Logger initialized.")
+
      return my_logger
 
 def update_queue():
      """
-     Puts the first quote in the queue at a random position in the second half.
+     Puts the first quote in the queue at a random position in the second half of the queue.
      """
-     # insert randomly in the second half
      with sqlite3.connect(config.DATABASE) as conn:
           c = conn.cursor()
 
@@ -73,6 +73,7 @@ def update_queue():
           c.execute("UPDATE queue SET ordering = (?) WHERE quoteID = (?)", (i, quoteID))
           
           conn.commit()
+
      my_logger.debug(f"Queue updated. Put first entry to position {i}/{n}.")
      
 def log_post(response, quoteID):
@@ -96,13 +97,14 @@ def get_new_quote():
      with sqlite3.connect(config.DATABASE) as conn:
           c = conn.cursor()
 
-          # get newest quote
+          # get next quote in queue
           quote, quoteID = c.execute("""SELECT quotes.quote, quotes.quoteID
                                    FROM quotes JOIN queue ON quotes.quoteID = queue.quoteID 
                                    WHERE queue.ordering = 1"""
                               ).fetchone()
                             
           conn.commit()
+
      return quote, quoteID
 
 def send_tweet(quote):
@@ -113,6 +115,7 @@ def send_tweet(quote):
      with open(config.CREDENTIALS_FILE, "r") as f:
           consumer_key, consumer_secret, access_token, access_token_secret = [line.split(':')[-1] for line in f.read().split()]
 
+     # establish an connection to the API
      client = tweepy.Client(
                consumer_key=consumer_key,
                consumer_secret=consumer_secret,
@@ -121,7 +124,7 @@ def send_tweet(quote):
                return_type=requests.Response
           )
 
-     # send
+     # send tweet
      response = client.create_tweet(text=quote)
      if response.status_code != 201:
           raise tweepy.TweepyException(f"Posting failed. Got response code {response.status_code}.")
@@ -134,20 +137,21 @@ if __name__=="__main__":
 
      scheduler = Scheduler()
 
-     # main loop
-     while True: # every day
+     # main loop (every day)
+     while True:
           
-          # compute new posting times
+          # generate new posting times
           scheduler.generate()
 
           while not scheduler.is_empty():
-               # get next posting time and sleep until then
+
+               # sleep until next posting time
                scheduler.sleep()
                
                # get newest quote in the queue
                quote, quoteID = get_new_quote()
 
-               # try to post
+               # post the tweet
                try:
                     response = send_tweet(quote)   
                     my_logger.debug(f"Quote posted successfully: {quote}")
@@ -159,5 +163,3 @@ if __name__=="__main__":
                # if successfull
                log_post(response, quoteID)
                update_queue()
-
-     
