@@ -1,6 +1,7 @@
 *
 !twitterbot.py
 !database.py
+!scheduler.py
 !config.py
 !.gitignore
 !requirements.txt
