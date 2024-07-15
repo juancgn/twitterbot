@@ -4,14 +4,14 @@ The most important parameters to check are those for the schedule.
 Set a schedule mode and their parameters as desired.
 """
 
-# app
+### app
 TWEET_MAX_LENGTH = 280
 
-# scheduler
+### scheduler
 """
 Available modes for generating the posting times are:
-    `fix`:          Fix posting times every day. May vary (daily) up to 59 mins, if ´random_variance` is nonzero.
-    `uniform`:      Evenly distributed within the time window every day anew. One posting per minute is maximum.
+    `fix`:          Fix posting times. May vary up to 59 mins, if ´random_variance` is set nonzero.
+    `uniform`:      Evenly distributed within the time window. One posting per minute is maximum.
 """
 SCHEDULE_MODE = 'uniform'
 FIX_MODE = {
@@ -19,17 +19,17 @@ FIX_MODE = {
         'random_variance' : 30
 }
 UNIFORM_MODE = {
-        'postings' : 10,
+        'num_posts' : 10,
         'time_window' : ['07:00', '23:00']
 }
 
-# paths
+### paths
 DATABASE = "data.db"
 LOGFILE = "twitterbot.log"
 CREDENTIALS_FILE = "cred.env"
 RAWDATA_FILE = "rawdata.txt"
 
-# formats
+### formats
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S %Z%z"
 TIME_FORMAT = "%H:%M"
 DATE_FORMAT = "%Y-%m-%d"
