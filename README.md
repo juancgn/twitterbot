@@ -7,10 +7,11 @@ Twitterbot is designed to run permanently and therefore you should run it on a s
 ## Features
 
 - **Database Connection:** The bot establishes a connection to a local SQLite database that manages quotes, queueing, and post logging.
-- **Tweet Posting:** Quotes are posted as tweets using the Twitter API v2 with Tweepy.
+- **Tweet Posting:** Quotes are posted as Tweets using the Twitter API v2 with Tweepy.
 - **Scheduling:** Multiple schedule options are provided which take care of the posting timing
 - **Logging:** Events and errors are logged to assist with performance monitoring and troubleshooting.
 - **Queueing:** Used quotes will be queued randomly in the second half of the queue, so the quote selection is random enough but an used quote is not posted again too soon.
+- **Efficient implementation** Twitterbot uses passive waiting and has therefore a very low CPU usage
 
 ## Requirements
 
@@ -73,9 +74,8 @@ Twitterbot is designed to run permanently and therefore you should run it on a s
 1. The script `database.py` also provides some other useful database related functions.
 2. The computed posting times and all the other logs will be written in a `twitterbot.log` file.
 3. Since I am German, the time data are in a 24hr format. If you use the AM/PM format, you should change the format variables in the `config.py` file to output (and readout) the correct format. You can use `'%I:%M %p'` as time format. I haven't tested this extensively, however, no problems should occur since the `datetime` module handles this internally.
+4. Twitter has introduced a [rule](https://help.x.com/en/using-x/automated-account-labels) that automated accounts need to be labeled. For that, a human run account must be connected and will be linked on the profile. Otherwise, Twitter considers the account as a terms-and-conditions-violating account and restricts it.
 
 ## Support
-
-If you use this bot and find it helpful, I'd love to hear about your project! Feel free to share your feedback, suggestions, or just let me know how you're using the bot. You find my email address on my Github profile.
 
 If you like this project, please give it a star ⭐ to show your support and help others find it.
