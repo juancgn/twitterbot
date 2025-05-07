@@ -102,14 +102,10 @@ class Scheduler:
             num_posts = int(total_space//space_per_post - 1)
             self.logger.warning(f"Posting {config.UNIFORM_MODE['postings']} posts from {start_time.strftime(config.TIME_FORMAT)} to {end_time.strftime(config.TIME_FORMAT)} is too much. Posting {int(num_posts)} posts instead (1 per minute).")
 
-        # add posting times iteratively
-        schedule = []
-        curr_time = start_time + timedelta(seconds=space_per_post)
-        while len(schedule) < num_posts:
-            schedule.append(curr_time)
-            curr_time += timedelta(seconds=space_per_post)
+        # create schedule
+        schedule = [start_time + (i+1)*timedelta(seconds=space_per_post) for i in range(num_posts)]
 
-        # compute posting date and correct the schedule
+        # compute posting date and modify the schedule date
         posting_day = now.date()
         if now.time() > schedule[-1].time():
             posting_day += timedelta(days=1)
